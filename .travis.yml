@@ -2,6 +2,7 @@ language: bash
 
 script:
 - wget -P miktex-install https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x86/miktex-portable-2.9.6753.exe
+- zip --help
 - zip -r ccm-to-cards.zip -x *.git*
 
 before_deploy:
