@@ -1,0 +1,326 @@
+\documentclass[%
+ ]{scrartcl}
+\pagestyle{empty}
+
+\usepackage{luacode}
+
+\def\paperFormat{A5}
+\def\itemsPerPage{1}
+\def\pageColumns{1}
+\def\pageRows{1}
+
+\begin{luacode}
+  if arg then
+    for i,v in ipairs(arg) do
+      sub, count = string.gsub(v, "%-paper%-format=", "")
+      if (count == 1) then
+        tex.print("\\global\\def\\paperFormat{" .. sub .. "}")
+        break
+      end
+    end
+    for i,v in ipairs(arg) do
+      sub, count = string.gsub(v, "%-items%-per%-page=", "")
+      if (count == 1) then
+        if (tonumber(sub) ~= 2 and tonumber(sub) ~= 4 and tonumber(sub) ~= 8) then
+          sub = "1"
+        end
+        tex.print("\\global\\def\\itemsPerPage{" .. sub .. "}")
+        if (tonumber(sub) == 2) then
+          tex.print("\\global\\def\\pageColumns{1}")
+          tex.print("\\global\\def\\pageRows{2}")
+          tex.print("\\global\\def\\isPortrait{true}")
+        elseif (tonumber(sub) == 4) then
+          tex.print("\\global\\def\\pageColumns{2}")
+          tex.print("\\global\\def\\pageRows{2}")
+        elseif (tonumber(sub) == 8) then
+          tex.print("\\global\\def\\pageColumns{2}")
+          tex.print("\\global\\def\\pageRows{4}")
+        end
+        break
+      end
+    end
+  end
+\end{luacode}
+
+\KOMAoptions{paper=\paperFormat}
+
+\newcounter{pageRowsCounter}
+\setcounter{pageRowsCounter}{\pageRows}
+
+%\usepackage[utf8]{inputenx}
+%\usepackage[T1]{fontenc}
+
+
+\usepackage{csvsimple}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+
+\usepackage{csquotes}
+\MakeOuterQuote{"}
+
+\usepackage{etoolbox}
+
+\newlength{\topMargin}
+\setlength{\topMargin}{5mm}
+\newlength{\rightMargin}
+\setlength{\rightMargin}{5mm}
+\newlength{\bottomMargin}
+\setlength{\bottomMargin}{5mm}
+\newlength{\leftMargin}
+\setlength{\leftMargin}{5mm}
+
+\newlength{\contentHeight}
+\newlength{\contentWidth}
+
+
+\ifdef{\isPortrait}{%
+  \KOMAoptions{paper=portrait}
+  \setlength{\contentHeight}{\dimexpr(\paperheight/\pageRows-\topMargin-\bottomMargin)\relax}
+  \setlength{\contentWidth}{\dimexpr(\paperwidth/\pageColumns-\leftMargin-\rightMargin)\relax}
+}{%
+  \KOMAoptions{paper=landscape}
+  \setlength{\contentHeight}{\dimexpr(\paperheight/\pageColumns-\topMargin-\bottomMargin)\relax}
+  \setlength{\contentWidth}{\dimexpr(\paperwidth/\pageRows-\leftMargin-\rightMargin)\relax}
+}
+
+\newlength{\fontSize}
+\setlength{\fontSize}{\dimexpr(\paperheight/19/\pageRows)\relax}
+
+\KOMAoptions{fontsize=\the\fontSize}
+
+\newlength{\cutLineWidth}
+\setlength{\cutLineWidth}{1pt}
+
+\newlength{\normalLineWidth}
+\setlength{\normalLineWidth}{\dimexpr(1ex/4)\relax}
+
+\newcommand{\normalLineColor}{black}
+
+\newlength{\summaryHeight}
+\setlength{\summaryHeight}{\dimexpr(\contentHeight/3)\relax}
+\newlength{\summaryWidth}
+\setlength{\summaryWidth}{\contentWidth}
+\newlength{\summaryBottomPadding}
+\setlength{\summaryBottomPadding}{2pt}
+
+\newlength{\idHeight}
+\setlength{\idHeight}{\dimexpr(\contentHeight/7)\relax}
+\newlength{\idWidth}
+\setlength{\idWidth}{\dimexpr(\contentWidth/3)\relax}
+
+\newlength{\idBottomPadding}
+\setlength{\idBottomPadding}{0mm}
+
+\newlength{\typeHeight}
+\setlength{\typeHeight}{\idHeight}
+\newlength{\typeWidth}
+\setlength{\typeWidth}{\dimexpr(\contentWidth-\idWidth)\relax}
+
+\newlength{\typeBottomPadding}
+\setlength{\typeBottomPadding}{0mm}
+
+\newlength{\remarksHeight}
+\setlength{\remarksHeight}{\dimexpr(\contentHeight-\summaryHeight-\idHeight)\relax}
+\newlength{\remarksWidth}
+\setlength{\remarksWidth}{\contentWidth}
+\newlength{\remarksBottomPadding}
+\setlength{\remarksBottomPadding}{\dimexpr(1ex/2)\relax}
+\newlength{\remarksLinePadding}
+\setlength{\remarksLinePadding}{\dimexpr(\contentWidth/50)\relax}
+\newlength{\remarksLineWidth}
+\setlength{\remarksLineWidth}{\dimexpr(1ex/4)\relax}
+\newlength{\remarksLineSep}
+\setlength{\remarksLineSep}{\dimexpr((\remarksHeight-\remarksBottomPadding)/3)\relax}
+
+%\makeatletter
+  %\def\convertto#1#2{\strip@pt\dimexpr #2*65536/\number\dimexpr 1#1}
+  %\def\fsize{\dimexpr\f@size pt}
+%\makeatother
+
+\newcommand{\remarksLineColor}{gray}
+
+\tikzstyle{normalLine}=[%
+  draw=\normalLineColor,%
+  line width=\normalLineWidth,%
+]
+
+\tikzstyle{remarksLine}=[%
+  draw=\remarksLineColor,%
+  line width=\remarksLineWidth,%
+]
+
+% USAGE:
+% \clipnode{1: line width}{2: line color}{3: node name}{4: position}{5: node width}{6: node height}{7: bottom padding}{8: content}
+\newcommand{\clipnode}[8]{%
+  \begin{tikzpicture}[remember picture,overlay, align=left]
+    \node (#3) [%
+      draw=#2,%
+      anchor=north west,%
+      minimum width=#5,%
+      minimum height=#6,%
+      line width=#1,%
+    ] at #4 {};%
+    \clip[%
+      %draw,%
+    ] ($#4+(#1,-#1)$) rectangle ($#4+(#5,-#6)$);%
+    \node [%
+      anchor=north west,%
+      %draw=red,%
+      text width=#5-\pgfkeysvalueof{/pgf/inner xsep}*2-#1,%
+    ] at ($#4+(#1,-#1)$) {#8};%
+  \end{tikzpicture}
+}%
+
+\pgfmathsetlengthmacro\verticalStep{\paperheight/\pageRows}
+\pgfmathsetlengthmacro\horizontalStep{\paperwidth/\pageColumns}
+
+\pgfmathsetmacro\pageRowsLoop{int(\pageRows-1)}
+\pgfmathsetmacro\pageColumnsLoop{int(\pageColumns-1)}
+
+\newcommand{\drawCutLines}{%
+  \begin{tikzpicture}[remember picture,overlay, align=left]%
+    \ifnum\pageRowsLoop>0
+      \foreach \row in {0,...,\pageRowsLoop}{%
+        \draw ($(current page.north west) + (\leftMargin,{-\verticalStep*(\row+1)})$) -- ++(\paperwidth-\rightMargin-\rightMargin,0);
+      }%
+    \fi
+    \ifnum\pageColumnsLoop>0
+      \foreach \column in {0,...,\pageColumnsLoop}{%
+        \draw ($(current page.north west) + ({\horizontalStep*(\column+1)},-\topMargin)$) -- ++(0,-\paperheight+\bottomMargin+\bottomMargin);
+      }%
+    \fi
+  \end{tikzpicture}%
+}
+
+\newcommand{\PBI}[4]{%
+  \clipnode%
+    {\normalLineWidth}%
+    {\normalLineColor}%
+    {header}%
+    %{($(current page.north west)+(\leftMargin,-\topMargin)$)}%
+    {($#4+(\leftMargin,-\topMargin)$)}%
+    {\summaryWidth}%
+    {\summaryHeight}%
+    {\summaryBottomPadding}%
+    {%
+      \large#1
+    }
+  %
+  \clipnode%
+    {\normalLineWidth}%
+    {\normalLineColor}%
+    {id}%
+    {($(header.south west)+(0,\normalLineWidth)$)}%
+    {\idWidth}%
+    {\idHeight}%
+    {\idBottomPadding}%
+    {%
+      \textsc{Id}:\\{\hfill\Large#2}
+    }
+  %
+  \clipnode%
+    {\normalLineWidth}%
+    {\normalLineColor}%
+    {type}%
+    {($(id.north east)+(-\normalLineWidth,0)$)}%
+    {\typeWidth}%
+    {\typeHeight}%
+    {\typeBottomPadding}%
+    {%
+      \textsc{Type}:\\{\hfill\large#3}
+    }
+  %
+  \clipnode%
+    {\normalLineWidth}%
+    {\normalLineColor}%
+    {remarks}%
+    {($(id.south west)+(0,\normalLineWidth)$)}%
+    {\remarksWidth}%
+    {\remarksHeight}%
+    {0}%
+    {%
+      \textsc{Remarks}:
+    }
+  %
+  \begin{tikzpicture}[remember picture,overlay, align=left]
+    \node (line1L) at ($(remarks.north west)+(\remarksLinePadding,-\remarksLineSep)$) {};
+    \node (line1R) at ($(remarks.north east)+(-\remarksLinePadding,-\remarksLineSep)$) {};
+    \node (line2L) at ($(line1L)+(0,-\remarksLineSep)$) {};
+    \node (line2R) at ($(line1R)+(0,-\remarksLineSep)$) {};
+    \node (line3L) at ($(line2L)+(0,-\remarksLineSep)$) {};
+    \node (line3R) at ($(line2R)+(0,-\remarksLineSep)$) {};
+    
+    \draw [remarksLine] (line1L) -- (line1R);
+    \draw [remarksLine] (line2L) -- (line2R);
+    \draw [remarksLine] (line3L) -- (line3R);
+  \end{tikzpicture}
+}
+
+\begin{document}
+  % Debugging
+  %\clipnode{5pt}{orange}{test}{(current page.north west)}{10cm}{4cm}{2pt}{%
+    %AAA sakjflsa flsaf lksajflksa jflaslf salkf ask flksa flksaj flkasjflksajf
+    %AAA sakjflsa flsaf lksajflksa jflaslf salkf ask flksa flksaj flkasjflksajf
+  %}
+  %\clipnode{3pt}{blue}{wurst}{(test.south west)}{4cm}{2cm}{2pt}{%
+    %BBB
+  %}
+  %\paperFormat, w: \the\paperwidth, h \the\paperheight, \itemsPerPage \\
+  %i: \itemsPerPage, c: \pageColumns, r: \pageRows \\
+  %f: \the\fontSize\\
+  %pageRowsCounter: \arabic{pageRowsCounter}\\
+  %pageColumnsLoop: \pageColumnsLoop, pageRowsLoop: \pageRowsLoop\\
+  %\ifdef{\isPortrait}{%
+    %PORTRAIT\\
+  %}{%
+    %LANDSCAPE\\
+  %}
+  %\clearpage   
+  %
+  %
+  \newcounter{createditems}
+  \setcounter{createditems}{0}
+  %
+  \newcounter{row}
+  \setcounter{row}{0}
+  \newcounter{column}
+  \setcounter{column}{0}
+  %
+  \drawCutLines%
+  %
+  \csvreader[%
+    separator=tab]{../processing/processed-data.csv}{%
+      Type=\Type,%
+      Id=\Id,%
+      Summary=\Summary,%
+      Status=\Status,%
+      Creation Date=\CreationDate,%
+      SCRUM Sprint=\ScrumSprint,%
+      SCRUM Team=\ScrumTeam,%
+      SCRUM Priority=\ScrumPriority,%
+  }{%  
+    %createditems: \arabic{createditems},
+    %row: \arabic{row},
+    %column: \arabic{column}\\
+    \PBI{\Summary}{\Id}{\Type}{($(current page.north west) + (\horizontalStep*\value{column}, \verticalStep*-\value{row})$)}
+    \stepcounter{createditems}
+    \stepcounter{row}
+    %
+    \ifnum\value{row}=\value{pageRowsCounter}
+      \stepcounter{column}
+      \setcounter{row}{0}
+    \fi    
+    %
+    \directlua{%
+      value = tex.count['c@createditems']
+      if (tonumber(value) == \itemsPerPage) then
+        tex.print([[\noexpand\setcounter{createditems}{0}]])
+        tex.print([[\noexpand\setcounter{row}{0}]])
+        tex.print([[\noexpand\setcounter{column}{0}]])
+        tex.print([[\noexpand\clearpage]])
+        tex.print([[\noexpand\drawCutLines]])
+      end
+    }%
+    %
+  }
+\end{document}

@@ -1,0 +1,8 @@
+processing/sed*
+latex/*.aux
+latex/*.log
+miktex/texmfs/data/miktex/data/le/pdftex/*
+miktex/texmfs/data/miktex/log/*
+processing/*.csv
+PBI.pdf
+miktex
