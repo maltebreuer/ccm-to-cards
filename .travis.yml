@@ -5,5 +5,3 @@ deploy:
   api_key: "GITHUB OAUTH TOKEN"
   file: "README.md"
   skip_cleanup: true
-  on:
-    tags: true
