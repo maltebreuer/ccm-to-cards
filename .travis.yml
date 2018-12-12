@@ -7,6 +7,6 @@ deploy:
   provider: releases
   api_key:
     secure: Ub9dVsuvVy51SU1PSjpQLee854qJ1n8hnUP2bEtUMGM2giJIFwBWfHquQs6I5fbdGogAdS2M2e9GyoEw9hy7VFljSyyfbNfU0julZT79IEi//CNjnBPdj459X9U638cYkzj5+5gjZqDBR/Cn1JHsCEJHW//fNDGzXEbhI8HX0/r28QE0SGZIKaQS+X/hz1D4nUfw+AO1ajs4nMovtUUxpIlDQ5dDsmHm7/HL3tRkQdZXuNzfWQMf6AeSq9CkdanhkzbLhATGJdnSTTDjwPpsdUAsVFnkaIjoNc+Xo7yKYZQRhnnnejgawWJD3MKBaIXCfYwmTCoEy/V+qsadproxyPoj9eCAFLHT149O4Q6Z9f8Pqt6jT+ploA6OCOg1zRb7GQDOvMBXHUwKs5hwpAuEcIbYyfkz2t6wBRgiOtHe+gQC5knWN4zLBllK5NNjNHacOeR0qJLLiDWW57MVEz4gzQTYRYEDR32JJSsNd9jlhog4q1BrQausonuPcJcjBuWiJMTzD7jV6AH7SlEKS2STRpLGTk2ZWfjyPgibe9jzzdDGgd7+DO1NoMVuu+D7YR32xDzaEa4vp6n6sVggMqAtjpnSgnXlnGwHKdR5q6ufrf1LdyTUV0sp58ewFmrhgaXuJkku7OmR/8KB6XhHu12ywP0AszQxio3Sv16VYfmlYzU=
-  file: miketex-install/miktex-portable-2.9.6753.exe
+  file: miktex-install/miktex-portable-2.9.6753.exe
   on:
     repo: maltebreuer/ccm-to-cards
