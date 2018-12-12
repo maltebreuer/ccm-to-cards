@@ -1,7 +1,8 @@
+os: windows
 deploy:
   provider: releases
   api_key: "GITHUB OAUTH TOKEN"
-  file: "FILE TO UPLOAD"
+  file: "README.md"
   skip_cleanup: true
   on:
     tags: true
