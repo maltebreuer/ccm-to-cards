@@ -1,5 +1,8 @@
-os: windows
 language: bash
+
+script:
+  - wget -P miktex-install https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x86/miktex-portable-2.9.6753.exe
+
 deploy:
   provider: releases
   api_key: "GITHUB OAUTH TOKEN"
