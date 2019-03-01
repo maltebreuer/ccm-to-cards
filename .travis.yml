@@ -1,8 +1,8 @@
 language: bash
 
 script:
-- wget -P miktex-install https://miktex.org/download/ctan/systems/win32/miktex/setup/windows-x86/miktex-portable-2.9.6753.exe
-- zip -r ccm-to-cards.zip . -x *.git*
+  - wget -P miktex-install http://mirrors.ctan.org/systems/win32/miktex/setup/windows-x86/miktex-portable-2.9.6942.exe
+  - zip -r ccm-to-cards.zip . -x *.git*
 
 before_deploy:
   # Set up git user name and tag this commit
