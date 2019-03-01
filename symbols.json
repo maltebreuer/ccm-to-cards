@@ -1,0 +1,35 @@
+{
+
+    "Internal Software Problem Report" : [
+        {
+            "Status" : ["Reopened", "Completed"],
+            "Symbol" : "↻"
+        },
+        {
+            "Status" : ["In Progress"],
+            "Symbol" : "🚧"
+        }
+    ],
+
+    "Software Change Request" : [
+        {
+            "Status" : ["Accepted"],
+            "Symbol" : "✔️"
+        },
+        {
+            "Status" : ["New"],
+            "Symbol" : "💡"
+        }
+    ],
+
+    "SW Product Backlog Item" : [
+        {
+            "Status" : ["Selected"],
+            "Symbol" : "🚛"
+        },
+        {
+            "Status" : ["New"],
+            "Symbol" : "⊙"
+        }
+    ]
+}

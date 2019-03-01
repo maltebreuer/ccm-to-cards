@@ -2,6 +2,10 @@
  ]{scrartcl}
 \pagestyle{empty}
 
+\usepackage{fontspec}
+
+\newfontfamily\Symbola{Symbola.ttf}
+
 \usepackage{luacode}
 
 \def\paperFormat{A5}
@@ -104,7 +108,7 @@
 \setlength{\summaryBottomPadding}{2pt}
 
 \newlength{\idHeight}
-\setlength{\idHeight}{\dimexpr(\contentHeight/7)\relax}
+\setlength{\idHeight}{\dimexpr(\contentHeight/10)\relax}
 \newlength{\idWidth}
 \setlength{\idWidth}{\dimexpr(\contentWidth/3)\relax}
 
@@ -112,15 +116,31 @@
 \setlength{\idBottomPadding}{0mm}
 
 \newlength{\typeHeight}
-\setlength{\typeHeight}{\idHeight}
+\setlength{\typeHeight}{\dimexpr(\contentHeight/10)\relax}
 \newlength{\typeWidth}
 \setlength{\typeWidth}{\dimexpr(\contentWidth-\idWidth)\relax}
 
 \newlength{\typeBottomPadding}
 \setlength{\typeBottomPadding}{0mm}
 
+\newlength{\symbolHeight}
+\setlength{\symbolHeight}{\dimexpr(\contentHeight/11)\relax}
+\newlength{\symbolWidth}
+\setlength{\symbolWidth}{\dimexpr(\contentWidth/10)\relax}
+
+\newlength{\symbolBottomPadding}
+\setlength{\symbolBottomPadding}{0mm}
+
+\newlength{\teamHeight}
+\setlength{\teamHeight}{\symbolHeight}
+\newlength{\teamWidth}
+\setlength{\teamWidth}{\dimexpr(\contentWidth-\symbolWidth)\relax}
+
+\newlength{\teamBottomPadding}
+\setlength{\teamBottomPadding}{0mm}
+
 \newlength{\remarksHeight}
-\setlength{\remarksHeight}{\dimexpr(\contentHeight-\summaryHeight-\idHeight)\relax}
+\setlength{\remarksHeight}{\dimexpr(\contentHeight-\summaryHeight-\idHeight-\teamHeight)\relax}
 \newlength{\remarksWidth}
 \setlength{\remarksWidth}{\contentWidth}
 \newlength{\remarksBottomPadding}
@@ -192,13 +212,15 @@
   \end{tikzpicture}%
 }
 
-\newcommand{\PBI}[4]{%
+% USAGE:
+% \PBI{1: Summary}{2: Id}{3: Type}{4: Symbol}{5: Team name}{6: position}
+\newcommand{\PBI}[6]{%
   \clipnode%
     {\normalLineWidth}%
     {\normalLineColor}%
     {header}%
     %{($(current page.north west)+(\leftMargin,-\topMargin)$)}%
-    {($#4+(\leftMargin,-\topMargin)$)}%
+    {($#6+(\leftMargin,-\topMargin)$)}%
     {\summaryWidth}%
     {\summaryHeight}%
     {\summaryBottomPadding}%
@@ -215,7 +237,7 @@
     {\idHeight}%
     {\idBottomPadding}%
     {%
-      \textsc{Id}:\\{\hfill\Large#2}
+      {\hfill\Large#2}
     }
   %
   \clipnode%
@@ -227,20 +249,42 @@
     {\typeHeight}%
     {\typeBottomPadding}%
     {%
-      \textsc{Type}:\\{\hfill\large#3}
+      {\hfill\large#3}
+    }
+  %
+  \clipnode%
+    {\normalLineWidth}%
+    {\normalLineColor}%
+    {symbol}%
+    {($(id.south west)+(0,\normalLineWidth)$)}%
+    {\symbolWidth}%
+    {\symbolHeight}%
+    {\symbolBottomPadding}%
+    {%
+      {\normalsize#4}
+    }
+  %
+  \clipnode%
+    {\normalLineWidth}%
+    {\normalLineColor}%
+    {team}%
+    {($(symbol.north east)+(-\normalLineWidth,0)$)}%
+    {\teamWidth}%
+    {\teamHeight}%
+    {\teamBottomPadding}%
+    {%
+      {\hfill\normalsize#5}
     }
   %
   \clipnode%
     {\normalLineWidth}%
     {\normalLineColor}%
     {remarks}%
-    {($(id.south west)+(0,\normalLineWidth)$)}%
+    {($(symbol.south west)+(0,\normalLineWidth)$)}%
     {\remarksWidth}%
     {\remarksHeight}%
     {0}%
-    {%
-      \textsc{Remarks}:
-    }
+    {}
   %
   \begin{tikzpicture}[remember picture,overlay, align=left]
     \node (line1L) at ($(remarks.north west)+(\remarksLinePadding,-\remarksLineSep)$) {};
@@ -255,6 +299,45 @@
     \draw [remarksLine] (line3L) -- (line3R);
   \end{tikzpicture}
 }
+
+\begin{luacode}
+require("lualibs.lua")
+
+function tabContainsKey(tab, key)
+    return tab[key] ~= nil
+end
+
+function tabContainsValue(tab, val)
+    for index, value in ipairs(tab) do
+        if value == val then
+            return true
+        end
+    end
+
+    return false
+end
+
+function getSymbol(tab, type, status)
+  if tabContainsKey(tab, type) then
+    for idx, value in ipairs(tab[type]) do
+      if tabContainsValue(value["Status"], status) then
+        return value["Symbol"]
+      end
+    end    
+  end
+  return ""
+end
+
+function getjsonfile (file)
+    local f, s
+      f = io.open(file, 'r')
+        s = f:read('*a')
+        f.close()
+        return s
+ end
+
+symbols = utilities.json.tolua(getjsonfile('../symbols.json'))
+\end{luacode}
 
 \begin{document}
   % Debugging
@@ -302,7 +385,8 @@
     %createditems: \arabic{createditems},
     %row: \arabic{row},
     %column: \arabic{column}\\
-    \PBI{\Summary}{\Id}{\Type}{($(current page.north west) + (\horizontalStep*\value{column}, \verticalStep*-\value{row})$)}
+    \PBI{\Summary}{\Id}{\Type}{{\Symbola \directlua{tex.print(getSymbol(symbols, [[\Type]], [[\Status]]))}}}{\ScrumTeam}%
+    {($(current page.north west) + (\horizontalStep*\value{column}, \verticalStep*-\value{row})$)}
     \stepcounter{createditems}
     \stepcounter{row}
     %
