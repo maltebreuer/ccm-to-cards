@@ -1,6 +1,8 @@
 processing/sed*
 latex/*.aux
 latex/*.log
+latex/*.tmp
+latex/tmp/*
 miktex/texmfs/data/miktex/data/le/pdftex/*
 miktex/texmfs/data/miktex/log/*
 processing/*.csv
